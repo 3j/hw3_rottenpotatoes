@@ -10,14 +10,30 @@ Given /the following movies exist/ do |movies_table|
   end
 end
 
-When /^(?:|I )check "([^"]*)"$/ do |field|
+When /^(?:|I )check "([^"]*)" rating$/ do |field|
   ratings_field = "ratings_#{field}"
   check(ratings_field)
 end
 
-When /^(?:|I )uncheck "([^"]*)"$/ do |field|
+When /^(?:|I )uncheck "([^"]*)" rating$/ do |field|
   ratings_field = "ratings_#{field}"
   uncheck(ratings_field)
+end
+
+# Make it easier to express checking or unchecking several boxes at once
+#  "When I uncheck the following ratings: PG, G, R"
+#  "When I check the following ratings: G"
+
+When /^I check the following ratings: (.*)$/ do |rating_list|
+  rating_list.split(%r{,\s*}).each do |rating|
+    step %{I check "#{rating}" rating}
+  end
+end
+
+When /^I uncheck the following ratings: (.*)$/ do |rating_list|
+  rating_list.split(%r{,\s*}).each do |rating|
+    step %{I uncheck "#{rating}" rating}
+  end
 end
 
 When /^(?:|I )press "([^"]*)"$/ do |button|
@@ -27,19 +43,29 @@ end
 
 Then /^(?:|I )should see "([^"]*)" movies$/ do |text|
   path_to_ratings_column = '//table/tbody/tr/td[2]'
+  # Needed in order to avoid false positives like
+  # 'G' in 'PG-13' (G is contained in PG-13)
+  # 'PG' in 'PG-13' (PG is contained in PG-13)
+  regexp = Regexp.new("^#{text}$")
+
   if page.respond_to? :should
-    page.should have_xpath(path_to_ratings_column, :text => text)
+    page.should have_xpath(path_to_ratings_column, :text => regexp)
   else
-    assert page.has_xpath?(path_to_ratings_column, :text => text)
+    assert page.has_xpath?(path_to_ratings_column, :text => regexp)
   end
 end
 
 Then /^(?:|I )should not see "([^"]*)" movies$/ do |text|
   path_to_ratings_column = '//table/tbody/tr/td[2]'
+  # Needed in order to avoid false positives like
+  # 'G' in 'PG-13' (G is contained in PG-13)
+  # 'PG' in 'PG-13' (PG is contained in PG-13)
+  regexp = Regexp.new("^#{text}$")
+
   if page.respond_to? :should
-    page.should have_no_xpath(path_to_ratings_column, :text => text)
+    page.should have_no_xpath(path_to_ratings_column, :text => regexp)
   else
-    assert page.has_no_xpath?(path_to_ratings_column, :text => text)
+    assert page.has_no_xpath?(path_to_ratings_column, :text => regexp)
   end
 end
 
@@ -50,14 +76,4 @@ Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.content  is the entire content of the page as a string.
   assert false, "Unimplmemented"
-end
-
-# Make it easier to express checking or unchecking several boxes at once
-#  "When I uncheck the following ratings: PG, G, R"
-#  "When I check the following ratings: G"
-
-When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
-  rating_list.split(%r{,\s*}).each do |rating|
-    step %{I check "#{rating}"}
-  end
 end
