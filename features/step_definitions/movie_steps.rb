@@ -69,6 +69,15 @@ Then /^(?:|I )should not see "([^"]*)" movies$/ do |text|
   end
 end
 
+Then /^I should see all of the movies$/ do
+  movies_count = Movie.count
+  if page.respond_to? :should
+    page.should have_css("table#movies tbody tr", :count => movies_count)
+  else
+    assert page.has_css?("table#movies tbody tr", :count => movies_count)
+  end
+end
+
 # Make sure that one string (regexp) occurs before or after another one
 #   on the same page
 
