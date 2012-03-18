@@ -41,6 +41,16 @@ When /^(?:|I )press "([^"]*)"$/ do |button|
   click_button(ratings_button)
 end
 
+When /^(?:|I )click on "Movie Title"$/ do 
+  movie_title_link = "title_header"
+  click_link(movie_title_link)
+end
+
+When /^(?:|I )click on "Release Date"$/ do 
+  release_date_link = "release_date_header"
+  click_link(release_date_link)
+end
+
 Then /^(?:|I )should see "([^"]*)" movies$/ do |text|
   path_to_ratings_column = '//table/tbody/tr/td[2]'
   # Needed in order to avoid false positives like
@@ -84,5 +94,11 @@ end
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.content  is the entire content of the page as a string.
-  assert false, "Unimplmemented"
+  #e1_appears_before_e2_regexp = Regexp.new(".*#{e1}.*#{e2}.*"/m)
+  #puts page.body
+  if page.respond_to? :should
+    page.body.should =~ /.*#{e1}.*#{e2}.*/m
+  else
+    assert page.body =~ /.*#{e1}.*#{e2}.*/m
+  end
 end
