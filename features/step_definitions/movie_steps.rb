@@ -10,6 +10,39 @@ Given /the following movies exist/ do |movies_table|
   end
 end
 
+When /^(?:|I )check "([^"]*)"$/ do |field|
+  ratings_field = "ratings_#{field}"
+  check(ratings_field)
+end
+
+When /^(?:|I )uncheck "([^"]*)"$/ do |field|
+  ratings_field = "ratings_#{field}"
+  uncheck(ratings_field)
+end
+
+When /^(?:|I )press "([^"]*)"$/ do |button|
+  ratings_button = "ratings_#{button.downcase}"
+  click_button(ratings_button)
+end
+
+Then /^(?:|I )should see "([^"]*)" movies$/ do |text|
+  path_to_ratings_column = '//table/tbody/tr/td[2]'
+  if page.respond_to? :should
+    page.should have_xpath(path_to_ratings_column, :text => text)
+  else
+    assert page.has_xpath?(path_to_ratings_column, :text => text)
+  end
+end
+
+Then /^(?:|I )should not see "([^"]*)" movies$/ do |text|
+  path_to_ratings_column = '//table/tbody/tr/td[2]'
+  if page.respond_to? :should
+    page.should have_no_xpath(path_to_ratings_column, :text => text)
+  else
+    assert page.has_no_xpath?(path_to_ratings_column, :text => text)
+  end
+end
+
 # Make sure that one string (regexp) occurs before or after another one
 #   on the same page
 
